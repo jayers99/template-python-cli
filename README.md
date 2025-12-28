@@ -8,6 +8,7 @@ A Python CLI project template following Praxis governance patterns.
 - **Typer CLI framework** - Modern, type-hint-based CLI
 - **BDD testing** - pytest-bdd with Gherkin feature files
 - **Quality tools** - ruff (linting), mypy (type checking)
+- **Pre-commit hooks** - Automated code quality checks
 - **Poetry packaging** - Dependency management and packaging
 
 ## Quick Start
@@ -102,6 +103,35 @@ your-project/
 ├── pyproject.toml
 └── README.md
 ```
+
+## Pre-commit Hooks
+
+This template includes pre-commit hooks for automated code quality checks.
+
+**Setup:**
+
+```bash
+# Install pre-commit
+pip install pre-commit
+
+# Install hooks (runs automatically on git commit)
+pre-commit install
+
+# Run manually on all files
+pre-commit run --all-files
+```
+
+**Included hooks:**
+
+- **ruff** - Linting and auto-fix
+- **ruff-format** - Code formatting
+- **mypy** - Type checking
+- **trailing-whitespace** - Remove trailing whitespace
+- **end-of-file-fixer** - Ensure files end with newline
+- **check-yaml** - Validate YAML syntax
+- **check-added-large-files** - Prevent large file commits
+
+---
 
 ## Architecture Decisions
 
