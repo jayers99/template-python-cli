@@ -1,0 +1,40 @@
+[tool.poetry]
+name = "template-python-cli"
+version = "0.1.0"
+description = "A Python CLI project template following Praxis governance patterns."
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+license = "MIT"
+
+packages = [{ include = "template_python_cli", from = "src" }]
+
+[tool.poetry.scripts]
+template-cli = "template_python_cli.cli:app"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+typer = "^0.15.1"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.4"
+pytest-bdd = "^8.1.0"
+ruff = "^0.8.4"
+mypy = "^1.14.1"
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_ignores = true
+files = ["src"]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -105,6 +105,50 @@ your-project/
 └── README.md
 ```
 
+## CLI Patterns
+
+This template demonstrates production CLI patterns:
+
+### Exit Codes
+
+```python
+from template_python_cli.domain.exit_codes import ExitCode
+
+raise typer.Exit(ExitCode.SUCCESS)           # 0
+raise typer.Exit(ExitCode.GENERAL_ERROR)     # 1
+raise typer.Exit(ExitCode.VALIDATION_ERROR)  # 65
+```
+
+### stdout/stderr Separation
+
+```python
+# Data output → stdout (safe for piping)
+typer.echo(result)
+
+# Diagnostics → stderr
+typer.echo("Processing...", err=True)
+```
+
+### Flags
+
+```bash
+template-cli --version        # Show version
+template-cli hello --verbose  # Detailed output
+template-cli hello --quiet    # Errors only
+```
+
+### Error Handling
+
+Domain errors are caught at the CLI layer and converted to user-friendly messages with appropriate exit codes:
+
+```python
+except ValidationError as e:
+    typer.echo(f"Error: {e.message}", err=True)
+    raise typer.Exit(ExitCode.VALIDATION_ERROR) from None
+```
+
+---
+
 ## Pre-commit Hooks
 
 This template includes pre-commit hooks for automated code quality checks.
