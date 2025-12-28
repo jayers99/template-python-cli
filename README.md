@@ -10,6 +10,7 @@ A Python CLI project template following Praxis governance patterns.
 - **Quality tools** - ruff (linting), mypy (type checking)
 - **Pre-commit hooks** - Automated code quality checks
 - **Poetry packaging** - Dependency management and packaging
+- **PEP 561 compliant** - `py.typed` marker for type checker support
 
 ## Quick Start
 
