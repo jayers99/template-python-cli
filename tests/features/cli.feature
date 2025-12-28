@@ -32,3 +32,22 @@ Feature: CLI Patterns
     When I run "hello '   '"
     Then the exit code should be 65
     And stderr should contain "Error: Name cannot be empty"
+
+  Scenario: Info command shows environment
+    When I run "info"
+    Then the exit code should be 0
+    And the output should contain "template-cli"
+    And the output should contain "Environment:"
+    And the output should contain "TTY detected:"
+
+  Scenario: Environment variable for name
+    Given environment variable "TEMPLATE_CLI_NAME" is set to "EnvUser"
+    When I run "hello"
+    Then the exit code should be 0
+    And the output should contain "Hello, EnvUser!"
+
+  Scenario: CLI argument overrides environment variable
+    Given environment variable "TEMPLATE_CLI_NAME" is set to "EnvUser"
+    When I run "hello CliUser"
+    Then the exit code should be 0
+    And the output should contain "Hello, CliUser!"
