@@ -1,6 +1,8 @@
 """Step definitions for CLI feature tests."""
 
 import os
+import tempfile
+from pathlib import Path
 
 import pytest
 from pytest_bdd import given, parsers, scenarios, then, when
@@ -115,3 +117,39 @@ def check_stdout_empty(result: dict) -> None:
     assert stdout == "" or "Hello" not in stdout, (
         f"Expected empty stdout. Got: {stdout}"
     )
+
+
+@pytest.fixture
+def temp_dir() -> dict[str, Path | None]:
+    """Provide a temporary directory for tests."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        yield {"path": Path(tmpdir), "config_path": None}
+
+
+@given("a temporary directory")
+def given_temp_dir(temp_dir: dict[str, Path | None]) -> None:
+    """Set up a temporary directory for config file."""
+    path = temp_dir["path"]
+    if path is not None:
+        temp_dir["config_path"] = path / "config.toml"
+
+
+@when("I run config init with path to temp directory")
+def run_config_init_with_temp(
+    cli_runner: CliRunner,
+    result: dict[str, object],
+    temp_dir: dict[str, Path | None],
+) -> None:
+    """Run config --init with path to temp directory."""
+    config_path = temp_dir["config_path"]
+    args = ["config", "--init", "--path", str(config_path)]
+    result["output"] = cli_runner.invoke(app, args)
+    result["config_path"] = config_path
+
+
+@then("the config file should exist")
+def check_config_file_exists(result: dict[str, object]) -> None:
+    """Verify the config file was created."""
+    config_path = result.get("config_path")
+    assert isinstance(config_path, Path), "Config path not set in result"
+    assert config_path.exists(), f"Config file not found at {config_path}"

@@ -7,11 +7,13 @@ This module demonstrates key CLI patterns:
 - --verbose/--quiet flags
 - Error handling (domain errors -> user messages)
 - Environment variable configuration
+- Configuration file support
 - Logging integration
 - TTY detection and color handling
 - Multiple commands pattern
 """
 
+from pathlib import Path
 from typing import Annotated
 
 import typer
@@ -22,10 +24,14 @@ from template_python_cli.domain.errors import DomainError, ValidationError
 from template_python_cli.domain.exit_codes import ExitCode
 from template_python_cli.infrastructure import (
     Verbosity,
+    create_default_config,
+    find_config_file,
     get_console,
+    get_default_config_path,
     get_error_console,
     get_logger,
     is_tty,
+    load_config,
     setup_logging,
 )
 
@@ -132,25 +138,53 @@ def hello(
 
 
 @app.command()
-def info() -> None:
+def info(
+    config: Annotated[
+        Path | None,
+        typer.Option(
+            "--config",
+            "-c",
+            help="Path to config file.",
+            envvar="TEMPLATE_CLI_CONFIG",
+        ),
+    ] = None,
+) -> None:
     """Show environment and configuration information.
 
     Demonstrates multiple commands pattern and environment detection.
 
     Examples:
         template-cli info
+        template-cli info --config /path/to/config.toml
     """
+    import os
+
     console = get_console()
 
     # Show version
     console.print(f"[bold]template-cli[/bold] v{__version__}")
     console.print()
 
+    # Show configuration
+    console.print("[bold]Configuration:[/bold]")
+    config_path = find_config_file(config)
+    if config_path:
+        console.print(f"  Config file: {config_path}")
+        try:
+            app_config = load_config(config)
+            console.print(f"  name: {app_config.name}")
+            console.print(f"  verbose: {app_config.verbose}")
+            console.print(f"  quiet: {app_config.quiet}")
+        except ValueError as e:
+            console.print(f"  [red]Error loading config:[/red] {e}")
+    else:
+        default = get_default_config_path()
+        console.print(f"  Config file: [dim](none - default: {default})[/dim]")
+
     # Show environment detection
+    console.print()
     console.print("[bold]Environment:[/bold]")
     console.print(f"  TTY detected: {is_tty()}")
-
-    import os
 
     no_color = os.environ.get("NO_COLOR")
     console.print(f"  NO_COLOR: {'set' if no_color is not None else 'not set'}")
@@ -159,6 +193,7 @@ def info() -> None:
     console.print()
     console.print("[bold]Environment Variables:[/bold]")
     env_vars = [
+        ("TEMPLATE_CLI_CONFIG", "Path to config file"),
         ("TEMPLATE_CLI_NAME", "Default name for hello command"),
         ("TEMPLATE_CLI_VERBOSE", "Enable verbose output"),
         ("TEMPLATE_CLI_QUIET", "Enable quiet mode"),
@@ -169,6 +204,69 @@ def info() -> None:
             console.print(f"  {var}={value}")
         else:
             console.print(f"  {var} [dim](not set - {desc})[/dim]")
+
+    raise typer.Exit(ExitCode.SUCCESS)
+
+
+@app.command(name="config")
+def config_cmd(
+    init: Annotated[
+        bool,
+        typer.Option(
+            "--init",
+            help="Create default config file.",
+        ),
+    ] = False,
+    path: Annotated[
+        Path | None,
+        typer.Option(
+            "--path",
+            "-p",
+            help="Custom path for config file.",
+        ),
+    ] = None,
+) -> None:
+    """Manage configuration file.
+
+    Examples:
+        template-cli config              # Show config location
+        template-cli config --init       # Create default config
+        template-cli config --init -p ./config.toml
+    """
+    console = get_console()
+    err_console = get_error_console()
+
+    if init:
+        try:
+            created_path = create_default_config(path)
+            console.print(f"[green]Created config file:[/green] {created_path}")
+        except Exception as e:
+            err_console.print(f"[red]Error creating config:[/red] {e}")
+            raise typer.Exit(ExitCode.GENERAL_ERROR) from None
+        raise typer.Exit(ExitCode.SUCCESS)
+
+    # Show config file location
+    default_path = get_default_config_path()
+    config_path = find_config_file()
+
+    console.print("[bold]Configuration File:[/bold]")
+    console.print(f"  Default location: {default_path}")
+
+    if config_path:
+        console.print(f"  Active config: {config_path}")
+        try:
+            app_config = load_config()
+            console.print()
+            console.print("[bold]Current Settings:[/bold]")
+            console.print(f"  name: {app_config.name}")
+            console.print(f"  verbose: {app_config.verbose}")
+            console.print(f"  quiet: {app_config.quiet}")
+        except ValueError as e:
+            err_console.print(f"[red]Error loading config:[/red] {e}")
+    else:
+        console.print("  Active config: [dim](none - using defaults)[/dim]")
+        console.print()
+        console.print("[dim]Run 'template-cli config --init' to create a config.[/dim]")
 
     raise typer.Exit(ExitCode.SUCCESS)
 

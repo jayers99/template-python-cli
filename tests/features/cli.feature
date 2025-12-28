@@ -51,3 +51,21 @@ Feature: CLI Patterns
     When I run "hello CliUser"
     Then the exit code should be 0
     And the output should contain "Hello, CliUser!"
+
+  Scenario: Config command shows default location
+    When I run "config"
+    Then the exit code should be 0
+    And the output should contain "Configuration File:"
+    And the output should contain "Default location:"
+
+  Scenario: Config init creates file
+    Given a temporary directory
+    When I run config init with path to temp directory
+    Then the exit code should be 0
+    And the output should contain "Created config file:"
+    And the config file should exist
+
+  Scenario: Info command shows config section
+    When I run "info"
+    Then the exit code should be 0
+    And the output should contain "Configuration:"

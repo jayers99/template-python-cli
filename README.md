@@ -209,6 +209,56 @@ except ValidationError as e:
     raise typer.Exit(ExitCode.VALIDATION_ERROR) from None
 ```
 
+### Configuration Files
+
+The CLI supports TOML configuration files with priority resolution:
+
+1. `--config` flag (explicit path)
+2. `TEMPLATE_CLI_CONFIG` environment variable
+3. `~/.config/template-cli/config.toml` (default location)
+
+**Create a config file:**
+
+```bash
+# Create default config at ~/.config/template-cli/config.toml
+template-cli config --init
+
+# Create at custom location
+template-cli config --init --path ./config.toml
+```
+
+**View config status:**
+
+```bash
+template-cli config      # Show config file location and current settings
+template-cli info        # Show config in environment info
+```
+
+**Example config.toml:**
+
+```toml
+# Template CLI Configuration
+name = "World"      # Default name for hello command
+verbose = false     # Enable verbose output
+quiet = false       # Enable quiet mode
+```
+
+**Using config in code:**
+
+```python
+from template_python_cli.infrastructure import load_config, AppConfig
+
+# Load with automatic resolution
+config = load_config()
+
+# Load from specific path
+config = load_config(Path("./my-config.toml"))
+
+# Access settings
+print(config.name)      # Default name
+print(config.verbose)   # Verbose setting
+```
+
 ---
 
 ## Shell Completion

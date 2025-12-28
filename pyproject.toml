@@ -15,6 +15,7 @@ template-cli = "template_python_cli.cli:app"
 python = "^3.11"
 typer = "^0.15.1"
 rich = "^13.9.4"
+pydantic = "^2.10.4"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.4"
