@@ -1,7 +1,9 @@
 """Step definitions for CLI feature tests."""
 
+import os
+
 import pytest
-from pytest_bdd import parsers, scenarios, then, when
+from pytest_bdd import given, parsers, scenarios, then, when
 from typer.testing import CliRunner
 
 from template_python_cli import __version__
@@ -22,6 +24,18 @@ def result():
     return {}
 
 
+@pytest.fixture
+def env_vars():
+    """Store environment variables to set for CLI invocation."""
+    return {}
+
+
+@given(parsers.parse('environment variable "{name}" is set to "{value}"'))
+def set_env_var(env_vars: dict, name: str, value: str) -> None:
+    """Set an environment variable for the CLI invocation."""
+    env_vars[name] = value
+
+
 @when(parsers.parse('I run the CLI with "{args}"'))
 def run_cli_with_args(cli_runner: CliRunner, result: dict, args: str) -> None:
     """Run the CLI with the given arguments."""
@@ -29,12 +43,29 @@ def run_cli_with_args(cli_runner: CliRunner, result: dict, args: str) -> None:
 
 
 @when(parsers.parse('I run "{command}"'))
-def run_command(cli_runner: CliRunner, result: dict, command: str) -> None:
+def run_command(
+    cli_runner: CliRunner, result: dict, env_vars: dict, command: str
+) -> None:
     """Run a CLI command."""
     import shlex
 
     args = shlex.split(command)
-    result["output"] = cli_runner.invoke(app, args)
+
+    # Set environment variables for this invocation
+    old_env = {}
+    for name, value in env_vars.items():
+        old_env[name] = os.environ.get(name)
+        os.environ[name] = value
+
+    try:
+        result["output"] = cli_runner.invoke(app, args)
+    finally:
+        # Restore original environment
+        for name in env_vars:
+            if old_env[name] is None:
+                os.environ.pop(name, None)
+            else:
+                os.environ[name] = old_env[name]
 
 
 @then(parsers.parse("the exit code should be {code:d}"))

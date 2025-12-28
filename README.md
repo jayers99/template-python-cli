@@ -137,15 +137,104 @@ template-cli hello --verbose  # Detailed output
 template-cli hello --quiet    # Errors only
 ```
 
+### Environment Variables
+
+Options can be configured via environment variables:
+
+```bash
+# Set via environment
+export TEMPLATE_CLI_NAME="World"
+template-cli hello              # Uses $TEMPLATE_CLI_NAME
+
+# CLI flags override environment variables
+template-cli hello Alice        # Ignores $TEMPLATE_CLI_NAME
+```
+
+```python
+# In code: add envvar parameter to options
+name: Annotated[str, typer.Argument(envvar="TEMPLATE_CLI_NAME")]
+```
+
+### Logging
+
+Logging integrates with verbosity flags and outputs to stderr:
+
+```python
+from template_python_cli.infrastructure import setup_logging, Verbosity
+
+setup_logging(Verbosity.VERBOSE)  # DEBUG level
+setup_logging(Verbosity.NORMAL)   # INFO level (default)
+setup_logging(Verbosity.QUIET)    # WARNING level
+```
+
+### TTY Detection and Colors
+
+Colors are automatically disabled when piped or when `NO_COLOR` is set:
+
+```python
+from template_python_cli.infrastructure import get_console, is_tty
+
+console = get_console()
+console.print("[bold green]Success![/bold green]")  # Rich markup
+
+if is_tty():
+    # Interactive terminal - show progress
+    pass
+```
+
+```bash
+# Colors disabled automatically when piped
+template-cli info | cat
+
+# Or explicitly via environment
+NO_COLOR=1 template-cli info
+```
+
+### Multiple Commands
+
+The template includes multiple commands demonstrating subcommand patterns:
+
+```bash
+template-cli hello World    # Greet command
+template-cli info           # Show environment info
+```
+
 ### Error Handling
 
 Domain errors are caught at the CLI layer and converted to user-friendly messages with appropriate exit codes:
 
 ```python
 except ValidationError as e:
-    typer.echo(f"Error: {e.message}", err=True)
+    err_console.print(f"[red]Error:[/red] {e.message}")
     raise typer.Exit(ExitCode.VALIDATION_ERROR) from None
 ```
+
+---
+
+## Shell Completion
+
+Typer provides built-in shell completion support.
+
+**Install completion:**
+
+```bash
+# For bash
+template-cli --install-completion bash
+
+# For zsh
+template-cli --install-completion zsh
+
+# For fish
+template-cli --install-completion fish
+```
+
+**Show completion script (without installing):**
+
+```bash
+template-cli --show-completion bash
+```
+
+After installation, restart your shell or source the config file.
 
 ---
 
