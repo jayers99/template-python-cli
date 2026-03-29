@@ -1,6 +1,5 @@
-# Pre-commit hooks for code quality
-# Install: poetry add --group dev pre-commit && poetry run pre-commit install
-# Run manually: poetry run pre-commit run --all-files
+# Install: uv run pre-commit install
+# Run manually: uv run pre-commit run --all-files
 
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
@@ -14,7 +13,7 @@ repos:
     hooks:
       - id: mypy
         name: mypy
-        entry: poetry run mypy
+        entry: uv run mypy
         language: system
         types: [python]
         pass_filenames: false

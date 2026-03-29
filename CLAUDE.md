@@ -1,32 +1,34 @@
-# Template Python CLI — Agent Notes
+# Template Python CLI -- Agent Notes
 
-This is a **project template** for scaffolding new Python CLI applications.
+Minimal project template for scaffolding new Python CLI applications.
 
 ## Purpose
 
 - **Code domain extension** providing scaffolding for new CLI projects
-- Used via `praxis extensions add template-python-cli` or as a GitHub template
+- Clone, rename, and start building
 
-## What It Provides
+## Toolchain
 
-- Hexagonal architecture (`domain/`, `application/`, `infrastructure/`)
-- Typer CLI framework with production patterns
-- BDD testing (pytest-bdd + Gherkin)
-- Quality tooling (ruff, mypy, pre-commit)
-- Poetry packaging
+- **Package manager:** uv
+- **Build backend:** hatchling
+- **Task runner:** just (justfile)
+- **CLI framework:** Typer
+- **Testing:** pytest + pytest-bdd (BDD with Gherkin)
+- **Linting/formatting:** ruff
+- **Type checking:** mypy (strict)
+- **Git hooks:** pre-commit
 
 ## Key Files
 
 | File | Purpose |
 |------|---------|
 | `src/template_python_cli/cli.py` | CLI entry point |
-| `src/template_python_cli/domain/` | Business logic |
-| `tests/features/` | Gherkin feature files |
-| `docs/adr/` | Architecture decisions |
+| `src/template_python_cli/domain/greeter.py` | Business logic |
+| `tests/features/cli.feature` | BDD scenarios |
+| `justfile` | Task runner recipes |
 
 ## When Working Here
 
 - This is a **template**, not a running application
-- Changes should be generic/reusable patterns
+- Changes should be generic and reusable
 - Keep example code minimal but demonstrative
-- Update README customization checklist when adding features
